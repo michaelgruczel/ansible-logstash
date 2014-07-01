@@ -21,7 +21,7 @@ If the hosts can change, disbale host key checkeing e.g.g by
 2.Create an inventory file:
 
 Thats a file which contains known hosts, groups them together and add varaibles related to the hosts. Its stored in /etc/ansible/hosts or you have to add the file as parameter if you want to execute commands
-A file coould look like this:
+A file could look like this:
 
     mail.example.com
     other2.example.com ansible_connection=ssh ansible_ssh_user=mdehaan
@@ -157,23 +157,72 @@ So its for example perfect to collect log files from distributed nodes, filter d
 
 In this example I will use logstash to parse local logfiles and push that data to a central redis database. This part is called shipper
 
-On a central node (where the databse is stored), I will use the data from the redis database to add this data to an elastic search database which then can be used by kibana to show the log data.
+On a central node (where the database is stored), I will use the data from the redis database to add this data to an elastic search database which then can be used by kibana to show the log data. I will call it indexer.
 
-Thsi setup can be used to handle several nodes, because it collect the data from the nodes and mergen the data together and because of the usage of redis as middleware it will perform well and is able to handle peaks.
+This setup can be used to handle several nodes, because it collect the data from the nodes and mergen the data together and because of the usage of redis as middleware it will perform well and is able to handle peaks.
+
+### the indexer
+
+I will assume we will use ubuntu and install everything in a folder called /monitoring
+
+    sudo apt-get update
+    sudo apt-get upgrade
+    sudo mkdir /monitoring
+
+We need java
+
+    sudo apt-get install openjdk-6-jre-headless -y
+
+We need redis
+
+    sudo apt-get install redis-server -y
+    cd /etc/redis
+    sudo sed -i 's/bind 127.0.0.1/bind 0.0.0.0/g' redis.conf
+    sudo service redis-server restart
+
+We need elastic search with some nice plugins
+
+    cd /monitoring
+    sudo wget https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-1.0.1.tar.gz
+    sudo tar zxvf elasticsearch-1.0.1.tar.gz
+    sudo mv elasticsearch-1.0.1 elasticsearch
+    cd /monitoring/elasticsearch/config/
+    sudo mv elasticsearch.yml elasticsearch-Default.yml
+    sudo sed 's/# cluster.name: elasticsearch/cluster.name: elasticsearch-monitoring/g'     elasticsearch-Default.yml > elasticsearch.yml
+    cd /monitoring/elasticsearch/bin
+    sudo ./plugin -install royrusso/elasticsearch-HQ
+    sudo ./elasticsearch -d
+
+And we need logstash itself
+
+    cd /monitoring    
+    sudo wget https://download.elasticsearch.org/logstash/logstash/logstash-1.4.0.tar.gz
+    sudo tar zxvf logstash-1.4.0.tar.gz
+    sudo  mv logstash-1.4.0 logstash
+    cd /monitoring/logstash/bin
+    
+A config could look like [logstash-indexer.conf][2]    
+
+    sudo ./logstash -f logstash-indexer.conf
 
 ### the shipper
 
-What we need is logstash e.g. by
+What we need is only logstash e.g. by
 
     sudo wget https://download.elasticsearch.org/logstash/logstash/logstash-1.4.0.tar.gz
     sudo tar zxvf logstash-1.4.0.tar.gz
     
-Then we should add the log files as input e.g. by a config see
+Then we should add the log files as input e.g. by a config see [logstashShipper.conf][1]
 
-    TODO 
+Then we can start the shipper by 
 
-TODO
+    sudo ./logstash -f logstashShipper.conf
+
 
 ## lets bring it together
 
 TODO
+
+
+[1]: https://github.com/michaelgruczel/ansible-logstash/blob/master/logstashShipper.conf
+[2]: https://github.com/michaelgruczel/ansible-logstash/blob/master/logstash-indexer.conf
