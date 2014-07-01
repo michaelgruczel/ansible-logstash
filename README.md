@@ -153,6 +153,27 @@ Or in my words:
 
 So its for example perfect to collect log files from distributed nodes, filter data and send the data to a cetral datastore where the data can be analyzed. 
 
+### the setup on distributed nodes
+
+In this example I will use logstash to parse local logfiles and push that data to a central redis database. This part is called shipper
+
+On a central node (where the databse is stored), I will use the data from the redis database to add this data to an elastic search database which then can be used by kibana to show the log data.
+
+Thsi setup can be used to handle several nodes, because it collect the data from the nodes and mergen the data together and because of the usage of redis as middleware it will perform well and is able to handle peaks.
+
+### the shipper
+
+What we need is logstash e.g. by
+
+    sudo wget https://download.elasticsearch.org/logstash/logstash/logstash-1.4.0.tar.gz
+    sudo tar zxvf logstash-1.4.0.tar.gz
+    
+Then we should add the log files as input e.g. by a config see
+
+    TODO 
+
+TODO
+
 ## lets bring it together
 
 TODO
