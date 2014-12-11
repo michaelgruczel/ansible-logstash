@@ -1,5 +1,9 @@
 # ansible-logstash
 
+```
+! This repository is in beta and does not contain content which can be used without adaptions so far
+```
+
 ## what is ansible
 
 Ansible is an IT automation tool. It can configure systems, deploy software, and orchestrate more advanced IT tasks and its free.
